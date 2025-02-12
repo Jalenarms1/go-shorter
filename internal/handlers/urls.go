@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 
 	"github.com/Jalenarms1/go-shorter/internal/db"
@@ -17,6 +18,11 @@ type URLRequest struct {
 }
 
 func HandleNewUrl(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		log.Fatal(err)
@@ -30,6 +36,11 @@ func HandleNewUrl(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Println(req.URL)
+
+	if !isValidUrl(req.URL) {
+		http.Error(w, "Invalid URL provided", http.StatusBadRequest)
+		return
+	}
 
 	urlCode := utils.GenerateShortUrl()
 
@@ -55,4 +66,29 @@ func HandleNewUrl(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(map[string]string{"url": fmt.Sprintf("%s/go/%s", myDomain, appUrl.UrlCode)})
 
+}
+
+func isValidUrl(srcUrl string) bool {
+	parsedUrl, err := url.ParseRequestURI(srcUrl)
+	if err != nil {
+		return false
+	}
+
+	if parsedUrl.Scheme != "http" && parsedUrl.Scheme != "https" {
+		return false
+	}
+
+	client := http.Client{}
+
+	resp, err := client.Get(srcUrl)
+	if err != nil {
+		fmt.Print(err)
+		return false
+	}
+
+	if resp.StatusCode != 200 {
+		return false
+	}
+
+	return true
 }
