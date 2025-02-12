@@ -17,6 +17,19 @@ type URLRequest struct {
 	URL string `json:"url"`
 }
 
+func HandleRedirect(w http.ResponseWriter, r *http.Request) {
+	fmt.Println(r.URL.Path)
+	urlCode := r.URL.Path[len("/go/"):]
+
+	appUrl, err := db.GetAppUrl(urlCode)
+	if err != nil {
+		http.Error(w, "Url not found", http.StatusNotFound)
+		return
+	}
+
+	http.Redirect(w, r, appUrl.SrcUrl, http.StatusFound)
+}
+
 func HandleNewUrl(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)

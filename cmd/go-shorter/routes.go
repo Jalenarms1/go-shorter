@@ -11,5 +11,7 @@ func NewServer() *http.ServeMux {
 
 	mux.HandleFunc("/new-url", handlers.HandleNewUrl)
 
+	mux.HandleFunc("/go/{urlCode}", handlers.HandleRedirect)
+
 	return mux
 }
