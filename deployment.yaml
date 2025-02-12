@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: go-shorter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: go-shorter
+  template:
+    metadata:
+      labels:
+        app: go-shorter
+    spec:
+      containers:
+        - name: go-shorter
+          image: gcr.io/portfolio-cluster/go-shorter:v0.2 # This will be updated with the GCR image
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: go-shorter-config
+          env: 
+            - name: TURSO_DATABASE_URL
+              valueFrom: 
+                secretKeyRef:
+                  name: app-secrets
+                  key: TURSO_DATABASE_URL
+            - name: TURSO_AUTH_TOKEN
+              valueFrom: 
+                secretKeyRef:
+                  name: app-secrets
+                  key: TURSO_AUTH_TOKEN
+            - name: ROOT_DOMAIN
+              valueFrom: 
+                secretKeyRef:
+                  name: app-secrets
+                  key: ROOT_DOMAIN
