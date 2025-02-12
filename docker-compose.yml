@@ -1,0 +1,11 @@
+
+services:
+  go-shorter:
+    build: .
+    image: go-shorter
+    container_name: go_short_service
+    # restart: unless-stopped
+    env_file:
+      - ./.env
+    ports:
+      - "8080:8080"
